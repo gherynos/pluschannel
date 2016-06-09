@@ -1,0 +1,46 @@
+{
+  "name": "pluschannel",
+  "version": "1.0.3",
+
+  "dependencies": {
+    "jquery": "~1.12.4",
+    "font-awesome": "~4.1.0",
+    "bootstrap": "~3.3.6",
+    "angular": "~1.5.6",
+    "angular-route": "~1.5.6",
+    "angular-resource": "~1.5.6",
+    "angular-sanitize": "~1.5.6"
+  },
+
+  "exportsOverride": {
+    "jquery": {
+      "js": "dist/jquery.min.js"
+    },
+    "font-awesome": {
+      "css": "css/font-awesome.min.css",
+      "fonts": "fonts/*"
+    },
+    "bootstrap": {
+      "js": "dist/js/bootstrap.min.js",
+      "css": [
+        "dist/css/bootstrap.min.css",
+        "dist/css/bootstrap-theme.min.css"
+      ],
+      "fonts": "dist/fonts/*"
+    },
+    "angular": {
+      "js": "angular.min.js"
+    },
+    "angular-route": {
+      "js": "angular-route.min.js"
+    },
+    "angular-resource": {
+      "js": "angular-resource.min.js"
+    },
+    "angular-sanitize": {
+      "js": "angular-sanitize.min.js"
+    },
+
+    "*": {}
+  }
+}

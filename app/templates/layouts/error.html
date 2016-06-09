@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+    <title>Plus Channel - Error</title>
+
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css">
+    <style type='text/css'>
+      body{
+        color: #33332d;
+      }
+
+      .red { color: #db4105 }
+      .blue { color: #9fb4cc }
+      .beige { color: #b7b7ae }
+
+      .center{ text-align: center; margin-top: 5%; }
+
+      .landing .prettyprint{ text-align: left; width: 70%; margin: 0 auto; padding: 15px;}
+
+      body {}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="center landing">
+        {% block layout_content %}
+          <h1>{% block title %}Oops{% endblock %}</h1>
+          <h3 class='blue'>{% block subtitle %}{% endblock %}</h3>
+          <p>
+            {% block body %}{% endblock %}
+          </p>
+        {% endblock %}
+        <p>
+          <br /><br /><a href="/" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-home"></span> Take me Home</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

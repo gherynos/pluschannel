@@ -1,0 +1,11 @@
+*.pyc
+*.coverage
+*~
+.DS_Store
+.idea
+node_modules
+temp
+venv
+deploy
+db.sqlite
+bower_components

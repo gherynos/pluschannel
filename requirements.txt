@@ -1,0 +1,11 @@
+bottle>=0.12.7
+bottle-memcache>=0.2.1
+bottle-sqlalchemy>=0.4.2
+bottleCBV>=0.2
+jinja2>=2.7.3
+markupsafe>=0.23
+python-memcached>=1.54
+PyYAML>=3.11
+google-api-python-client==1.3.1
+pyfeed==0.7.4
+xe==0.7.4

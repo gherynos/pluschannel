@@ -1,0 +1,10 @@
+main:
+  version: '1.0.3'
+  memchache_server: 'localhost:11211'
+  db_url: 'sqlite:///db.sqlite'
+
+feed:
+  api_key: '<INSERT KEY HERE>'
+  photo_size:
+    website: 122
+    database: 144
