@@ -62,8 +62,8 @@ Create the database:
 $ sqlite3 db.sqlite
 $ sqlite> .read schema.sql
 $ sqlite> .quit
-```bash  
-    
+```
+
 ### API Key
 
 An API Key for Google+ needs to be acquired for the project; please follow the
