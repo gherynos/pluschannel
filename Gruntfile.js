@@ -1,23 +1,23 @@
 /*
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+ Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
-This file is part of Plus Channel.
+ This file is part of Plus Channel.
 
-Plus Channel is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+ Plus Channel is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-Plus Channel is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ Plus Channel is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
     var path = require('path');
 
@@ -99,7 +99,7 @@ module.exports = function(grunt) {
                 files: [{
 
                     expand: true,
-                    src: ['./app/**', './app.wsgi', './config.py', './config.yaml', './requirements.txt', './db.sqlite'],
+                    src: ['./app/**', './app.wsgi', './config.py', './config.yaml', './requirements.txt', './db.sqlite', './credentials.json'],
                     dest: './deploy'
                 }]
             }
@@ -123,8 +123,10 @@ module.exports = function(grunt) {
                     prune: true,
                     cleanTargetDir: false,
                     cleanBowerDir: false,
-                    layout: function(type, component, source) { return path.join(type); }
-              }
+                    layout: function (type, component, source) {
+                        return path.join(type);
+                    }
+                }
             }
         }
     });

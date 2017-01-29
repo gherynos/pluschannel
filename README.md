@@ -48,9 +48,7 @@ Install the dependencies in the virtual environment:
 
 ```bash
 $ source venv/bin/activate
-$ pip install -r requirements.txt \
-    -f http://www.blarg.net/~steveha/pyfeed-0.7.4.tar.gz \
-    -f http://www.blarg.net/~steveha/xe-0.7.4.tar.gz
+$ pip install -r requirements.txt
 $ deactivate
 ```
 
@@ -64,11 +62,11 @@ $ sqlite> .read schema.sql
 $ sqlite> .quit
 ```
 
-### API Key
+### Google Service Account
 
-An API Key for Google+ needs to be acquired for the project; please follow the
-[instructions](https://developers.google.com/+/web/api/rest/oauth#acquiring-and-using-an-api-key) provided by Google.  
-Once generated, set the property `api_key` in the `config.yaml` file.
+A Service Account with Google+ APIs configured needs to be acquired for the project; please follow the
+[instructions](https://developers.google.com/api-client-library/python/auth/service-accounts) provided by Google.  
+Save the generated JSON credentials to `credentials.json` in the root of the project.
 
 Development server
 ----------------------
@@ -96,7 +94,7 @@ The files to deploy to the web server (WSGI) will be placed in the `deploy` fold
 Copyright and license
 ---------------------
 
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

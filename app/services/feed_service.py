@@ -1,5 +1,5 @@
 """
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
 This file is part of Plus Channel.
 
@@ -19,20 +19,31 @@ along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 
 import random
 import string
+
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from httplib2 import Http
+from oauth2client.service_account import ServiceAccountCredentials
+
 from app.models.feed import Feed
 
 
 class FeedService:
     MEMCACHE_KEY = 'plusc_feed_%s'
+    credentials = None
 
     def __init__(self):
         pass
 
     @classmethod
-    def _get_plus_service(cls, key):
-        return build('plus', 'v1', developerKey=key)
+    def _get_plus_service(cls, credentials_file):
+
+        if not cls.credentials:
+            cls.credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, [
+                'https://www.googleapis.com/auth/plus.login'])
+        http_auth = cls.credentials.authorize(Http())
+
+        return build('plus', 'v1', http=http_auth, cache_discovery=False)
 
     @classmethod
     def create_feed(cls, db, mc, cfg, user_id):
@@ -43,7 +54,7 @@ class FeedService:
 
         try:
             # get user details from Google Plus
-            service = cls._get_plus_service(cfg.get('feed.api_key'))
+            service = cls._get_plus_service(cfg.get('feed.credentials_file'))
             person = service.people().get(userId=user_id).execute()
 
             # change photo size
@@ -149,7 +160,7 @@ class FeedService:
 
         try:
             # get user activities
-            service = cls._get_plus_service(cfg.get('feed.api_key'))
+            service = cls._get_plus_service(cfg.get('feed.credentials_file'))
             obj = service.activities().list(userId=user_id, collection='public', maxResults='5').execute()
 
         except HttpError as e:
