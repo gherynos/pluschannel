@@ -230,12 +230,21 @@ class FeedService:
                         # photo
 
                         temp_url = attachment['url']
-                        if 'url' in attachment['image']:
-                            activity['imageUrl'] = attachment['image']['url']
-                        if 'width' in attachment['image']:
-                            activity['imageWidth'] = attachment['image']['width']
-                        if 'height' in attachment['image']:
-                            activity['imageHeight'] = attachment['image']['height']
+                        if 'fullImage' in attachment:
+                            if 'url' in attachment['fullImage']:
+                                activity['imageUrl'] = attachment['fullImage']['url']
+                            if 'width' in attachment['fullImage']:
+                                activity['imageWidth'] = str(attachment['fullImage']['width'])
+                            if 'height' in attachment['fullImage']:
+                                activity['imageHeight'] = str(attachment['fullImage']['height'])
+
+                        else:
+                            if 'url' in attachment['image']:
+                                activity['imageUrl'] = attachment['image']['url']
+                            if 'width' in attachment['image']:
+                                activity['imageWidth'] = str(attachment['image']['width'])
+                            if 'height' in attachment['image']:
+                                activity['imageHeight'] = str(attachment['image']['height'])
 
                 # check activity URL
                 if 'attachmentUrl' not in activity and temp_url is not None:
