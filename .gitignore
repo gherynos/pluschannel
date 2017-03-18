@@ -10,3 +10,4 @@ deploy
 db.sqlite
 bower_components
 credentials.json
+.cache

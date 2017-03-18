@@ -1,5 +1,5 @@
 """
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
 This file is part of Plus Channel.
 
@@ -16,8 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
+import sys
 
-from config import app
 import bottle
 
-bottle.run(app, host='localhost', port=8080)
+from config import app
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.getLogger('readability').setLevel(logging.DEBUG)
+
+sys.stderr = sys.stdout
+bottle.run(app, host='0.0.0.0', port=8080, debug=True)

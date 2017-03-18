@@ -16,11 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import random
 import string
 
 from googleapiclient.discovery import build
+from googleapiclient.discovery_cache.base import Cache
 from googleapiclient.errors import HttpError
 from httplib2 import Http
 from oauth2client.service_account import ServiceAccountCredentials
@@ -30,20 +30,25 @@ from app.models.feed import Feed
 
 class FeedService:
     MEMCACHE_KEY = 'plusc_feed_%s'
-    credentials = None
+    _http = None
 
     def __init__(self):
         pass
 
     @classmethod
-    def _get_plus_service(cls, credentials_file):
+    def _get_http(cls, credentials_file):
 
-        if not cls.credentials:
-            cls.credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, [
+        if not cls._http:
+            credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, [
                 'https://www.googleapis.com/auth/plus.login'])
-        http_auth = cls.credentials.authorize(Http())
+            cls._http = credentials.authorize(Http(cache=".cache"))
 
-        return build('plus', 'v1', http=http_auth, cache_discovery=False)
+        return cls._http
+
+    @classmethod
+    def _get_plus_service(cls, credentials_file):
+        return build('plus', 'v1', http=cls._get_http(credentials_file), cache_discovery=True,
+                     cache=FeedService.MemoryCache())
 
     @classmethod
     def create_feed(cls, db, mc, cfg, user_id):
@@ -52,9 +57,9 @@ class FeedService:
                 random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in
                 range(12))
 
+        service = cls._get_plus_service(cfg.get('feed.credentials_file'))
         try:
             # get user details from Google Plus
-            service = cls._get_plus_service(cfg.get('feed.credentials_file'))
             person = service.people().get(userId=user_id).execute()
 
             # change photo size
@@ -89,6 +94,9 @@ class FeedService:
             if e.resp.status == 404:
                 raise cls.UserIdNotFoundException
             raise e
+
+        finally:
+            del service
 
     @classmethod
     def get_feed_activities(cls, db, mc, cfg, pkey):
@@ -152,21 +160,28 @@ class FeedService:
             if not db_feed:
                 db_feed = 404
             mc.set(m_key, db_feed)
+            del feed
             feed = db_feed
 
         if feed == 404:
             raise cls.FeedNotFoundException()
-        user_id = feed.user_id
 
+        user_id = feed.user_id
+        photo_url = feed.photo_url
+        del feed
+
+        service = cls._get_plus_service(cfg.get('feed.credentials_file'))
         try:
             # get user activities
-            service = cls._get_plus_service(cfg.get('feed.credentials_file'))
             obj = service.activities().list(userId=user_id, collection='public', maxResults='5').execute()
 
         except HttpError as e:
             if e.resp.status == 404:
                 raise cls.UserIdNotFoundException
             raise e
+
+        finally:
+            del service
 
         # parse activities
         activities = []
@@ -232,10 +247,20 @@ class FeedService:
             process_activity_data(activity)
             activities.append(activity)
 
-        return {'name': name or 'unknown', 'activities': activities, 'user_id': user_id, 'photo_url': feed.photo_url}
+        del obj
+        return {'name': name or 'unknown', 'activities': activities, 'user_id': user_id, 'photo_url': photo_url}
 
     class UserIdNotFoundException(Exception):
         pass
 
     class FeedNotFoundException(Exception):
         pass
+
+    class MemoryCache(Cache):
+        _CACHE = {}
+
+        def get(self, url):
+            return FeedService.MemoryCache._CACHE.get(url)
+
+        def set(self, url, content):
+            FeedService.MemoryCache._CACHE[url] = content
