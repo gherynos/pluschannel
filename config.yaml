@@ -1,7 +1,8 @@
 main:
-  version: '1.0.4'
+  version: '1.0.5'
   memchache_server: 'localhost:11211'
   db_url: 'sqlite:///db.sqlite'
+  cache_dir: '.cache'
 
 feed:
   credentials_file: 'credentials.json'

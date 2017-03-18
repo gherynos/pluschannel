@@ -36,18 +36,18 @@ class FeedService:
         pass
 
     @classmethod
-    def _get_http(cls, credentials_file):
+    def _get_http(cls, credentials_file, cache_dir):
 
         if not cls._http:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, [
                 'https://www.googleapis.com/auth/plus.login'])
-            cls._http = credentials.authorize(Http(cache=".cache"))
+            cls._http = credentials.authorize(Http(cache=cache_dir))
 
         return cls._http
 
     @classmethod
-    def _get_plus_service(cls, credentials_file):
-        return build('plus', 'v1', http=cls._get_http(credentials_file), cache_discovery=True,
+    def _get_plus_service(cls, credentials_file, cache_dir):
+        return build('plus', 'v1', http=cls._get_http(credentials_file, cache_dir), cache_discovery=True,
                      cache=FeedService.MemoryCache())
 
     @classmethod
@@ -57,7 +57,7 @@ class FeedService:
                 random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in
                 range(12))
 
-        service = cls._get_plus_service(cfg.get('feed.credentials_file'))
+        service = cls._get_plus_service(cfg.get('feed.credentials_file'), cfg.get('feed.cache_dir'))
         try:
             # get user details from Google Plus
             person = service.people().get(userId=user_id).execute()
@@ -170,7 +170,7 @@ class FeedService:
         photo_url = feed.photo_url
         del feed
 
-        service = cls._get_plus_service(cfg.get('feed.credentials_file'))
+        service = cls._get_plus_service(cfg.get('feed.credentials_file'), cfg.get('feed.cache_dir'))
         try:
             # get user activities
             obj = service.activities().list(userId=user_id, collection='public', maxResults='5').execute()
