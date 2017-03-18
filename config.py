@@ -17,16 +17,16 @@ You should have received a copy of the GNU General Public License
 along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import bottle.ext.memcache
 import yaml
-from bottle import response, jinja2_template as template
 from bottle import Bottle, static_file
+from bottle import response, jinja2_template as template
 from bottle_sqlalchemy import Plugin as bottleSQLAlchemyPlugin
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-import bottle.ext.memcache
-from app.controllers.home import Home
-from app.controllers.feeds import Feeds
 
+from app.controllers.feeds import Feeds
+from app.controllers.home import Home
 
 with open('config.yaml', 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
@@ -61,9 +61,11 @@ with open('config.yaml', 'r') as ymlfile:
         res.headers['X-XSS-Protection'] = '1; mode=block'
         res.headers['X-Content-Type-Options'] = 'nosniff'
 
+
     @app.hook('after_request')
     def common_headers():
         set_common_headers(response)
+
 
     # serve IMG files
     @app.route('/img/<filepath:path>')
@@ -72,12 +74,14 @@ with open('config.yaml', 'r') as ymlfile:
         set_common_headers(res)
         return res
 
+
     # serve JS files
     @app.route('/js/<filepath:path>')
     def serve_static_js(filepath):
         res = static_file(filepath, root='app/static/js')
         set_common_headers(res)
         return res
+
 
     # serve TPL files
     @app.route('/tpl/<filepath:path>')
@@ -86,12 +90,14 @@ with open('config.yaml', 'r') as ymlfile:
         set_common_headers(res)
         return res
 
+
     # serve CSS files
     @app.route('/css/<filepath:path>')
     def serve_static_css(filepath):
         res = static_file(filepath, root='app/static/css')
         set_common_headers(res)
         return res
+
 
     # serve FONTS files
     @app.route('/fonts/<filepath:path>')
@@ -100,12 +106,14 @@ with open('config.yaml', 'r') as ymlfile:
         set_common_headers(res)
         return res
 
+
     # serve FAVICON file
     @app.route('/favicon.ico')
     def serve_static_favicon():
         res = static_file('favicon.ico', root='app/static/img/ico')
         set_common_headers(res)
         return res
+
 
     # serve ROBOTS file
     @app.route('/robots.txt')
@@ -114,6 +122,7 @@ with open('config.yaml', 'r') as ymlfile:
         set_common_headers(res)
         return res
 
+
     # serve other static files
     @app.route('/static/<filepath:path>')
     def serve_static(filepath):
@@ -121,16 +130,19 @@ with open('config.yaml', 'r') as ymlfile:
         set_common_headers(res)
         return res
 
+
     # custom errors
     @app.error(400)
     def error400(err):
         set_common_headers(response)
         return template('errors/400.html', dict())
 
+
     @app.error(401)
     def error401(err):
         set_common_headers(response)
         return template('errors/401.html', dict())
+
 
     @app.error(404)
     def error404(err):
@@ -143,10 +155,12 @@ with open('config.yaml', 'r') as ymlfile:
         set_common_headers(response)
         return template('errors/410.html', dict())
 
+
     @app.error(500)
     def error500(err):
         set_common_headers(response)
         return template('errors/500.html', dict())
+
 
     # register controllers
     Home.register(app)

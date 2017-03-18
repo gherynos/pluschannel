@@ -1,5 +1,5 @@
 """
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
 This file is part of Plus Channel.
 
@@ -17,12 +17,9 @@ You should have received a copy of the GNU General Public License
 along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from bottle import jinja2_template as template
-from bottleCBV import BottleView, route
+from feedgen.ext.base import BaseExtension
 
 
-class Home(BottleView):
-    @route('/', method=['GET'])
-    def list(self, mc, db):
-        context = []
-        return template('home.html', context)
+class GeoExtension(BaseExtension):
+    def extend_ns(self):
+        return {'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#'}

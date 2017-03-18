@@ -17,22 +17,24 @@ You should have received a copy of the GNU General Public License
 along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import logging
 import HTMLParser
+import logging
 import re
 import unicodedata as ud
 from xml.sax.saxutils import escape
-from feed.rss import *
-from feed.date.rfc822 import timestamp_from_tf
-from feed.date.rfc3339 import tf_from_timestamp
-from bottleCBV import BottleView, route
+
 from bottle import request, response, abort
+from bottleCBV import BottleView, route
+from feedgen.feed import FeedGenerator
+
+from app.ext.geo import GeoExtension
+from app.ext.geo_entry import GeoEntryExtension
+from app.ext.media import MediaExtension
+from app.ext.media_entry import MediaEntryExtension
 from app.services.feed_service import FeedService
-from app.ext.echannel import AtomLink, new_xmldoc_echannel
 
 
 class Feeds(BottleView):
-
     @route('/feeds', method='POST')
     def create(self, mc, db):
         response.set_header('content-type', 'application/json')
@@ -56,13 +58,8 @@ class Feeds(BottleView):
     @route('/feeds/<pkey>', method=['GET'])
     def get(self, mc, db, pkey):
         def check_encoding(string):
-            data = string
-            if string is not unicode:
-                data = unicode(string)
+            return ud.normalize('NFKD', string).encode('ascii', 'xmlcharrefreplace')
 
-            return ud.normalize('NFKD', data).encode('ascii', 'xmlcharrefreplace')
-
-        h = HTMLParser.HTMLParser()
         try:
             # host URL
             urlparts = request.urlparts
@@ -74,26 +71,27 @@ class Feeds(BottleView):
             activities = obj['activities']
             user_id = obj['user_id']
 
-            # namespaces
-            xmldoc, channel = new_xmldoc_echannel()
-            xmldoc.root_element.attrs['xmlns:media'] = 'http://search.yahoo.com/mrss/'
-            xmldoc.root_element.attrs['xmlns:atom'] = 'http://www.w3.org/2005/Atom'
-            xmldoc.root_element.attrs['xmlns:geo'] = 'http://www.w3.org/2003/01/geo/wgs84_pos#'
+            # main element
+            channel = FeedGenerator()
+            channel.title('Plus Channel feed')
+            channel.description('Google+ List of Activities for %s' % obj['name'])
+            channel.generator('Plus Channel %s' % cfg.get('main.version'))
+            channel.id('http://plus.google.com/' + user_id)
+            channel.link(href=host_url, rel='self')
+            channel.docs('')
+            if 'photo_url' in obj and obj['photo_url'] is not None:
+                channel.image(url=obj['photo_url'],
+                              title='Plus Channel feed',
+                              link='http://plus.google.com/' + user_id,
+                              width=str(cfg.get('feed.photo_size.database')),
+                              height=str(cfg.get('feed.photo_size.database')))
+
+            # additional namespaces
+            channel.register_extension('media', MediaExtension, MediaEntryExtension)
+            channel.register_extension('geo', GeoExtension, GeoEntryExtension)
 
             # compose items
-            channel.title = 'Plus Channel feed'
-            channel.description = 'Google+ List of Activities for %s' % obj['name']
-            channel.generator = 'Plus Channel %s' % cfg.get('main.version')
-            channel.link = 'http://plus.google.com/' + user_id
-            channel.docs.text = ''
-            channel.atom_link = AtomLink(host_url)
-            if 'photo_url' in obj and obj['photo_url'] is not None:
-                channel.image = Image(
-                    url=obj['photo_url'],
-                    title='Plus Channel feed',
-                    link='http://plus.google.com/' + user_id,
-                    width=cfg.get('feed.photo_size.database'),
-                    height=cfg.get('feed.photo_size.database'))
+            h = HTMLParser.HTMLParser()
             for activity in activities:
 
                 title = activity['title']
@@ -124,46 +122,40 @@ class Feeds(BottleView):
                 logging.debug('----------------')
 
                 # create item
-                item = Item()
-                item.title = check_encoding(title)
-                updated = tf_from_timestamp(activity['datePublished'])
-                updated = timestamp_from_tf(updated)
-                item.pubDate = TextElement('pubDate', updated)
+                item = channel.add_entry()
+                item.title(check_encoding(title))
+                item.pubdate(activity['datePublished'])
 
                 # process content
-                c_content = CDATA()
-                c_content.text = check_encoding(content)
-                item.description = str(c_content)
+                c_content = check_encoding(content)
+                item.description(c_content)
+                item.content(content=c_content, type='CDATA')
 
-                # check image presence
+                # # check image presence
                 if 'imageUrl' in activity and activity['imageUrl'] != '':
-                    image = TextElement('media:thumbnail')
-                    image.attrs['url'] = activity['imageUrl']
+                    item.media.media_thumbnail_url(activity['imageUrl'])
 
                     # check size
                     if 'imageWidth' in activity and 'imageHeight' in activity:
-                        image.attrs['width'] = activity['imageWidth']
-                        image.attrs['height'] = activity['imageHeight']
-
-                    item.thumbnail = image
+                        item.media.media_thumbnail_width(activity['imageWidth'])
+                        item.media.media_thumbnail_height(activity['imageHeight'])
 
                 # check coordinates
                 if activity['hasCoordinates']:
-                    item.lat = TextElement('geo:lat', activity['latitude'])
-                    item.long = TextElement('geo:long', activity['longitude'])
+                    item.geo.geo_lat(activity['latitude'])
+                    item.geo.geo_long(activity['longitude'])
 
                 # check link
                 if url is None or url == '':
                     url = activity['url']
-                item.link = escape(url)
-                item.guid = escape(activity['id'])
-                item.guid.attrs['isPermaLink'] = 'false'
-
-                channel.items.append(item)
+                item.link(href=escape(url), rel='alternate')
+                item.guid(escape(activity['id']))
 
             # return created feed
             response.set_header('content-type', 'application/rss+xml; charset=utf-8')
-            return unicode(xmldoc)
+            out = unicode(channel.rss_str(pretty=True))
+            del channel, activities, user_id, obj
+            return out
 
         except FeedService.FeedNotFoundException:
             abort(404)
