@@ -1,5 +1,5 @@
 main:
-  version: '1.0.5'
+  version: '1.1.0'
   memchache_server: 'localhost:11211'
   db_url: 'sqlite:///db.sqlite'
   cache_dir: '.cache'
