@@ -82,7 +82,7 @@ class FeedService:
                 feed.save(db)
 
             else:
-                mc.delete(cls.MEMCACHE_KEY % feed.pkey)
+                mc.delete(str(cls.MEMCACHE_KEY % feed.pkey))
 
             # update photo
             feed.photo_url = photo_url_db
@@ -152,7 +152,7 @@ class FeedService:
                 atv['url'] = url
 
         # check memcache for existing value
-        m_key = cls.MEMCACHE_KEY % pkey
+        m_key = str(cls.MEMCACHE_KEY % pkey)
         feed = mc.get(m_key)
         if not feed:
             # load feed from DB

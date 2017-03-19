@@ -1,5 +1,5 @@
 """
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
 This file is part of Plus Channel.
 
@@ -58,7 +58,11 @@ class Feeds(BottleView):
     @route('/feeds/<pkey>', method=['GET'])
     def get(self, mc, db, pkey):
         def check_encoding(string):
-            return ud.normalize('NFKD', string).encode('ascii', 'xmlcharrefreplace')
+            data = string
+            if string is not unicode:
+                data = unicode(string)
+
+            return ud.normalize('NFKD', data).encode('ascii', 'xmlcharrefreplace')
 
         try:
             # host URL
@@ -76,13 +80,13 @@ class Feeds(BottleView):
             channel.title('Plus Channel feed')
             channel.description('Google+ List of Activities for %s' % obj['name'])
             channel.generator('Plus Channel %s' % cfg.get('main.version'))
-            channel.id('http://plus.google.com/' + user_id)
+            channel.id('https://plus.google.com/' + user_id)
             channel.link(href=host_url, rel='self')
             channel.docs('')
             if 'photo_url' in obj and obj['photo_url'] is not None:
                 channel.image(url=obj['photo_url'],
                               title='Plus Channel feed',
-                              link='http://plus.google.com/' + user_id,
+                              link='https://plus.google.com/' + user_id,
                               width=str(cfg.get('feed.photo_size.database')),
                               height=str(cfg.get('feed.photo_size.database')))
 
@@ -153,7 +157,7 @@ class Feeds(BottleView):
 
             # return created feed
             response.set_header('content-type', 'application/rss+xml; charset=utf-8')
-            out = unicode(channel.rss_str(pretty=True))
+            out = channel.rss_str(pretty=True)
             del channel, activities, user_id, obj
             return out
 
