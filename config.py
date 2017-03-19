@@ -1,5 +1,5 @@
 """
-Copyright (C) 2012-2016  Luca Zanconato (<luca.zanconato@nharyes.net>)
+Copyright (C) 2012-2017  Luca Zanconato (<luca.zanconato@nharyes.net>)
 
 This file is part of Plus Channel.
 
@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Plus Channel.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 
 import bottle.ext.memcache
 import yaml
@@ -28,7 +29,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from app.controllers.feeds import Feeds
 from app.controllers.home import Home
 
-with open('config.yaml', 'r') as ymlfile:
+with open(os.environ['PC_CONFIG_FILE'] if 'PC_CONFIG_FILE' in os.environ else 'config.yaml', 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
     # Bottle app
@@ -44,7 +45,7 @@ with open('config.yaml', 'r') as ymlfile:
 
     # DB
     Base = declarative_base()
-    engine = create_engine(cfg['main']['db_url'])
+    engine = create_engine(cfg['main']['db_url'], pool_recycle=600)
     plugin = bottleSQLAlchemyPlugin(
         engine,
         Base.metadata,
