@@ -8,8 +8,6 @@ You can use this application to generate the RSS feed associated to your account
 TwitterFeed to propagate your public Google+ posts to Twitter, Facebook and LinkedIn.
 The generated feed contains the last five public posts of the selected account or page.  
 
-[Live service website](https://ws.pluschannel.nharyes.net)
-
 Setup
 -----
 
