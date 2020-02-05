@@ -7,4 +7,4 @@ markupsafe==0.23
 python-memcached==1.54
 pyyaml>=4.2b1
 google-api-python-client==1.6.2
-feedgen==0.5.1
+feedgen==0.9.0
